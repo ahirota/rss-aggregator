@@ -1,10 +1,30 @@
 import { setUser } from "./config";
+import { createUser, getUser } from "./db/queries/users";
 
-export function handlerLogin(cmdName: string, ...args: string[]) {
+export async function handlerLogin(cmdName: string, ...args: string[]) {
     if (args.length === 0) {
-        throw new Error('Login handler expects a single argument: username');
+        throw new Error('Login handler expects a single argument: name');
     }
-    const username = args[0];
-    setUser(username)
-    console.log(`Successfully logged in with user: ${username}`);
+    const name = args[0];
+    const exists = await getUser(name);
+    if (!exists) {
+        throw new Error(`User with name "${name}" does not exist.`);
+    }
+    setUser(name);
+    console.log(`Successfully logged in with user: ${name}`);
+}
+
+export async function handlerRegister(cmdName: string, ...args: string[]) {
+    if (args.length === 0) {
+        throw new Error('Register handler expects a single argument: Name');
+    }
+    const name = args[0];
+    const exists = await getUser(name);
+    if (exists) {
+        throw new Error(`User with name "${name}" already exists.`);
+    }
+    const newUser = await createUser(name);
+    setUser(name);
+    console.log(`Successfully registered user with name: ${name}`);
+    console.log(newUser);
 }

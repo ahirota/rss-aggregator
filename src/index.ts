@@ -1,9 +1,10 @@
 import { type CommandsRegistry, registerCommand, runCommand } from "./registry";
-import { handlerLogin } from "./commands";
+import { handlerLogin, handlerRegister } from "./commands";
 
-function main() {
+async function main() {
     const registry: CommandsRegistry = {};
-    registerCommand(registry, 'login', handlerLogin);
+    await registerCommand(registry, 'login', handlerLogin);
+    await registerCommand(registry, 'register', handlerRegister);
 
     const userArgs = process.argv.slice(2);
 
@@ -15,7 +16,9 @@ function main() {
     const command = userArgs[0];
     const commandArgs = userArgs.slice(1);
 
-    runCommand(registry, command, ...commandArgs);
+    await runCommand(registry, command, ...commandArgs);
+
+    process.exit(0);
 }
 
 main();
