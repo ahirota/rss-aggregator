@@ -1,10 +1,11 @@
 import { type CommandsRegistry, registerCommand, runCommand } from "./registry";
-import { handlerLogin, handlerRegister } from "./commands";
+import { handlerLogin, handlerRegister, handlerReset } from "./commands";
 
 async function main() {
     const registry: CommandsRegistry = {};
     await registerCommand(registry, 'login', handlerLogin);
     await registerCommand(registry, 'register', handlerRegister);
+    await registerCommand(registry, 'reset', handlerReset);
 
     const userArgs = process.argv.slice(2);
 
