@@ -3,8 +3,8 @@ import { db } from "../index";
 import { feeds } from "../schema";
 
 // CREATE
-export async function createFeed(name: string, url: string, user_id: string) {
-  const [result] = await db.insert(feeds).values({name: name, url: url, user_id: user_id}).returning();
+export async function createFeed(name: string, url: string, userId: string) {
+  const [result] = await db.insert(feeds).values({name: name, url: url, userId: userId}).returning();
   return result;
 }
 
@@ -14,7 +14,7 @@ export async function getFeeds() {
   return result;
 }
 
-export async function getFeed(url: string) {
+export async function getFeedByUrl(url: string) {
   const [result] = await db.select().from(feeds).where(eq(feeds.url, url));
   return result;
 }

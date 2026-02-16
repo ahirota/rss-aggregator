@@ -1,12 +1,12 @@
 import { readConfig, setUser } from "./config";
-import { createUser, deleteUsers, getUser, getUsers } from "./db/queries/users";
+import { createUser, deleteUsers, getUserByName, getUsers } from "./db/queries/users";
 
 export async function handlerLogin(cmdName: string, ...args: string[]) {
     if (args.length === 0) {
         throw new Error('Login handler expects a single argument: name');
     }
     const name = args[0];
-    const exists = await getUser(name);
+    const exists = await getUserByName(name);
     if (!exists) {
         throw new Error(`User with name "${name}" does not exist.`);
     }
@@ -19,7 +19,7 @@ export async function handlerRegister(cmdName: string, ...args: string[]) {
         throw new Error('Register handler expects a single argument: Name');
     }
     const name = args[0];
-    const exists = await getUser(name);
+    const exists = await getUserByName(name);
     if (exists) {
         throw new Error(`User with name "${name}" already exists.`);
     }

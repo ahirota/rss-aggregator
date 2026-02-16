@@ -1,39 +1,28 @@
-import { readConfig } from "./config";
-import { getUser } from "./db/queries/users";
-import { getFeed } from "./db/queries/feeds";
+import { getFeedByUrl } from "./db/queries/feeds";
 import { createFeedFollow, getFeedFollowsForUser } from "./db/queries/feedFollows";
+import { type User } from "./db/schema";
 
-export async function handlerFollow(cmdName: string, ...args: string[]) {
+export async function handlerFollow(cmdName: string, user: User, ...args: string[]) {
     if (args.length === 0) {
         throw new Error('Follow handler expects a single argument: url');
     }
+    
     const url = args[0];
-    const feedExists = await getFeed(url);
-    if (!feedExists) {
+    const feed = await getFeedByUrl(url);
+    
+    if (!feed) {
         throw new Error(`Feed with URL "${url}" does not exist.`);
     }
-
-    const config = readConfig();
-    const userExists = await getUser(config.currentUserName);
-    if (!userExists) {
-        throw new Error(`User with name "${config.currentUserName}" does not exist.`);
-    }
     
-    const follow = await createFeedFollow(userExists.id, feedExists.id);
+    const follow = await createFeedFollow(user.id, feed.id);
 
     console.log(`New follow: ${follow.userName} now following "${follow.feedName}"`);
 }
 
-export async function handlerFollowing(cmdName: string, ...args: string[]) {
-    const config = readConfig();
-    const userExists = await getUser(config.currentUserName);
-    if (!userExists) {
-        throw new Error(`User with name "${config.currentUserName}" does not exist.`);
-    }
+export async function handlerFollowing(cmdName: string, user: User, ...args: string[]) {
+    const follows = await getFeedFollowsForUser(user.name);
 
-    const follows = await getFeedFollowsForUser(userExists.name);
-
-    console.log(`${userExists.name} currently following {${follows.length}} feed(s).`)
+    console.log(`${user.name} currently following {${follows.length}} feed(s).`)
     for (const follow of follows) {
         console.log(` - ${follow.feedName}`);
     }

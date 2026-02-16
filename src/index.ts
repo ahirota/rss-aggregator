@@ -2,6 +2,7 @@ import { type CommandsRegistry, registerCommand, runCommand } from "./registry";
 import { handlerLogin, handlerRegister, handlerReset, handlerUsers } from "./commandsUsers";
 import { handlerAddFeed, handlerAgg, handlerFeeds } from "./commandsRSS";
 import { handlerFollow, handlerFollowing } from "./commandsFollows";
+import { middlewareLoggedIn } from "./middleware";
 
 async function main() {
     const registry: CommandsRegistry = {};
@@ -13,12 +14,12 @@ async function main() {
 
     // RSS Commands
     registerCommand(registry, 'agg', handlerAgg);
-    registerCommand(registry, 'addfeed', handlerAddFeed);
+    registerCommand(registry, 'addfeed', middlewareLoggedIn(handlerAddFeed));
     registerCommand(registry, 'feeds', handlerFeeds);
 
     // Follow Commands
-    registerCommand(registry, 'follow', handlerFollow);
-    registerCommand(registry, 'following', handlerFollowing);
+    registerCommand(registry, 'follow', middlewareLoggedIn(handlerFollow));
+    registerCommand(registry, 'following', middlewareLoggedIn(handlerFollowing));
 
     const userArgs = process.argv.slice(2);
 
