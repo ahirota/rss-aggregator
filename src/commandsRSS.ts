@@ -3,6 +3,7 @@ import { createFeed, getFeed, getFeeds } from "./db/queries/feeds";
 import { getUser, getUserByID } from "./db/queries/users";
 import { type Feed, type User } from "./db/schema";
 import { fetchFeed } from "./rss/feed";
+import { createFeedFollow } from "./db/queries/feedFollows";
 
 export async function handlerAgg(cmdName: string, ...args: string[]) {
     const feedUrl = "https://www.wagslane.dev/index.xml";
@@ -33,6 +34,7 @@ export async function handlerAddFeed(cmdName: string, ...args: string[]) {
     }
 
     const newFeed = await createFeed(name, url, currentUser.id);
+    await createFeedFollow(currentUser.id, newFeed.id);
     printFeed(newFeed, currentUser);
 }
 

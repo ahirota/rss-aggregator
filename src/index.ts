@@ -1,6 +1,7 @@
 import { type CommandsRegistry, registerCommand, runCommand } from "./registry";
 import { handlerLogin, handlerRegister, handlerReset, handlerUsers } from "./commandsUsers";
 import { handlerAddFeed, handlerAgg, handlerFeeds } from "./commandsRSS";
+import { handlerFollow, handlerFollowing } from "./commandsFollows";
 
 async function main() {
     const registry: CommandsRegistry = {};
@@ -14,6 +15,10 @@ async function main() {
     registerCommand(registry, 'agg', handlerAgg);
     registerCommand(registry, 'addfeed', handlerAddFeed);
     registerCommand(registry, 'feeds', handlerFeeds);
+
+    // Follow Commands
+    registerCommand(registry, 'follow', handlerFollow);
+    registerCommand(registry, 'following', handlerFollowing);
 
     const userArgs = process.argv.slice(2);
 
