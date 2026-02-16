@@ -2,7 +2,7 @@ import { readConfig, setUser } from "./config";
 import { createUser, deleteUsers, getUserByName, getUsers } from "./db/queries/users";
 
 export async function handlerLogin(cmdName: string, ...args: string[]) {
-    if (args.length === 0) {
+    if (args.length !== 1) {
         throw new Error('Login handler expects a single argument: name');
     }
     const name = args[0];
@@ -15,7 +15,7 @@ export async function handlerLogin(cmdName: string, ...args: string[]) {
 }
 
 export async function handlerRegister(cmdName: string, ...args: string[]) {
-    if (args.length === 0) {
+    if (args.length !== 1) {
         throw new Error('Register handler expects a single argument: Name');
     }
     const name = args[0];

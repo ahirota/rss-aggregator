@@ -13,7 +13,7 @@ export async function handlerAgg(cmdName: string, ...args: string[]) {
 }
 
 export async function handlerAddFeed(cmdName: string, user: User, ...args: string[]) {
-    if (args.length < 2) {
+    if (args.length !== 2) {
         throw new Error('Add Feed handler expects two arguments: name and url');
     }
     
