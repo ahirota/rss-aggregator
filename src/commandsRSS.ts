@@ -1,15 +1,90 @@
-import { createFeed, getFeeds } from "./db/queries/feeds";
+import { createFeed, getFeeds, getNextFeedToFetch, markFeedFetched } from "./db/queries/feeds";
 import { getUserByID } from "./db/queries/users";
 import { type Feed, type User } from "./db/schema";
 import { fetchFeed } from "./rss/feed";
 import { createFeedFollow } from "./db/queries/feedFollows";
 
 export async function handlerAgg(cmdName: string, ...args: string[]) {
-    const feedUrl = "https://www.wagslane.dev/index.xml";
+    if (args.length !== 1) {
+        throw new Error('Aggregate handler expects one argument: time_between_reqs');
+    }
+    
+    const time_between_reqs = args[0];
 
-    const rssFeed = await fetchFeed(feedUrl);
+    const timeBetweenRequests = parseDuration(time_between_reqs);
+    
+    console.log(`Collecting feeds every ${time_between_reqs}`);
+    console.log();
 
-    console.log(rssFeed);
+    await scrapeFeeds().catch(handleError);
+
+    const interval = setInterval(() => {
+        scrapeFeeds().catch(handleError);
+    }, timeBetweenRequests);
+
+    await new Promise<void>((resolve) => {
+        process.on("SIGINT", () => {
+            console.log();
+            console.log("Shutting down feed aggregator...");
+            clearInterval(interval);
+            resolve();
+        });
+    });
+}
+
+async function scrapeFeeds() {
+    const nextFeed = await getNextFeedToFetch();
+    if (!nextFeed) {
+        throw new Error('Failed to get next feed');
+    }
+
+    const marked = await markFeedFetched(nextFeed.id);
+    if (!nextFeed) {
+        throw new Error('Failed to mark feed to be fetched');
+    }
+
+    const rssFeed = await fetchFeed(marked.url);
+
+    console.log(`Retrieved RSS Feed ${rssFeed.metadata.title} at ${rssFeed.metadata.link}`);
+    console.log(`Listing Feed Items:`);
+    console.log(`-------------------`);
+    for (const item of rssFeed.items) {
+        console.log(`* ${item.title}`);
+    }
+    console.log(`-------------------`);
+    console.log();
+}
+
+function parseDuration(durationStr: string): number {
+    const regex = /^(\d+)(ms|s|m|h)$/;
+    const match = durationStr.match(regex);
+    if (!match) {
+        throw new Error('Invalid time between requests string.');
+    }
+
+    const duration = Number(match[1]);
+
+    switch(match[2]) {
+        case 'ms':
+            return duration;
+        case 's':
+            return duration * 1000;
+        case 'm':
+            return duration * 1000 * 60;
+        case 'h':
+            return duration * 1000 * 60 * 60;
+        default:
+            throw new Error('Invalid time modifier for duration between requests.');
+    }
+}
+
+function handleError(e: Error) {
+    console.log();
+    console.log(`-----------------------`);
+    console.log(`An Error occurred while retrieving Blog RSS Feeds:`);
+    console.log(e.message);
+    console.log(`-----------------------`);
+    console.log();
 }
 
 export async function handlerAddFeed(cmdName: string, user: User, ...args: string[]) {
