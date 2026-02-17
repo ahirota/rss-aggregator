@@ -3,6 +3,7 @@ import { getUserByID } from "./db/queries/users";
 import { type Feed, type User } from "./db/schema";
 import { fetchFeed } from "./rss/feed";
 import { createFeedFollow } from "./db/queries/feedFollows";
+import { createPost } from "./db/queries/posts";
 
 export async function handlerAgg(cmdName: string, ...args: string[]) {
     if (args.length !== 1) {
@@ -16,7 +17,7 @@ export async function handlerAgg(cmdName: string, ...args: string[]) {
     console.log(`Collecting feeds every ${time_between_reqs}`);
     console.log();
 
-    await scrapeFeeds().catch(handleError);
+    scrapeFeeds().catch(handleError);
 
     const interval = setInterval(() => {
         scrapeFeeds().catch(handleError);
@@ -50,6 +51,7 @@ async function scrapeFeeds() {
     console.log(`-------------------`);
     for (const item of rssFeed.items) {
         console.log(`* ${item.title}`);
+        const post = await createPost(marked.id,item);
     }
     console.log(`-------------------`);
     console.log();
@@ -78,11 +80,11 @@ function parseDuration(durationStr: string): number {
     }
 }
 
-function handleError(e: Error) {
+function handleError(e: unknown) {
     console.log();
     console.log(`-----------------------`);
-    console.log(`An Error occurred while retrieving Blog RSS Feeds:`);
-    console.log(e.message);
+    console.error(`An Error occurred while retrieving Blog RSS Feeds:`);
+    console.error(`${e instanceof Error ? e.message : e}`);
     console.log(`-----------------------`);
     console.log();
 }

@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import { db } from "../index";
-import { users, feeds, feedFollows, type User } from "../schema";
+import { users, feeds, feedFollows } from "../schema";
 
 // CREATE
 export async function createFeedFollow(userId: string, feedId: string) {
